@@ -1,0 +1,19 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.cover
+/vendor/
+/Godeps/
+/.glide/
+/.idea/
+/.vscode/
+/.cache/
+/.DS_Store
+.env
+/tmp
