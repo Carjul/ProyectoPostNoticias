@@ -76,6 +76,14 @@ func GetOneArticulo(w http.ResponseWriter, r *http.Request) {
 
 func CreateArticulo(w http.ResponseWriter, r *http.Request) {
 	coll := db.Client.Database("Noticias").Collection("Articulo")
+	collEstado := db.Client.Database("Noticias").Collection("EstadoArticulo")
+
+	var estado bson.M
+	err1 := collEstado.FindOne(context.Background(), bson.M{"Nombre": "Redactado"}).Decode(&estado)
+	if err1 != nil {
+		http.Error(w, fmt.Sprintf("Error al buscar el estado: %s", err1.Error()), http.StatusInternalServerError)
+		return
+	}
 
 	var articulo map[string]interface{}
 	err := json.NewDecoder(r.Body).Decode(&articulo)
@@ -83,6 +91,15 @@ func CreateArticulo(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error al leer el artículo: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
+	var idUser string = articulo["UsuarioId"].(string)
+	objID, err := primitive.ObjectIDFromHex(idUser)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+	// Agregar el estado al artículo
+	articulo["EstadoArticuloId"] = estado["_id"]
+	articulo["UsuarioId"] = objID
 
 	result, err := coll.InsertOne(context.Background(), articulo)
 	if err != nil {
@@ -104,6 +121,51 @@ func CreateArticulo(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write(responseJSON)
 
+}
+
+func UpdateEstArticulo(w http.ResponseWriter, r *http.Request) {
+	type Estado struct {
+		ID        string `json:"id"`
+		NombreEst string `json:"nombre_est"`
+	}
+
+	coll := db.Client.Database("Noticias").Collection("Articulo")
+	collEstado := db.Client.Database("Noticias").Collection("EstadoArticulo")
+
+	var estadoBody Estado
+	err2 := json.NewDecoder(r.Body).Decode(&estadoBody)
+	if err2 != nil {
+		http.Error(w, fmt.Sprintf("Error al leer el estado: %s", err2.Error()), http.StatusBadRequest)
+		return
+	}
+
+	// Convertir el ID de string a ObjectID
+	objID, err := primitive.ObjectIDFromHex(estadoBody.ID)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+	var estado bson.M
+	err1 := collEstado.FindOne(context.Background(), bson.M{"Nombre": estadoBody.NombreEst}).Decode(&estado)
+	if err1 != nil {
+		http.Error(w, fmt.Sprintf("Error al buscar el estado: %s", err1.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	result, err := coll.UpdateOne(context.Background(), bson.M{"_id": objID}, bson.M{"$set": bson.M{"EstadoArticuloId": estado["_id"]}})
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error al actualizar el artículo: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	if result.MatchedCount == 0 {
+		http.Error(w, "Artículo no encontrado", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(`{"updated": true}`))
 }
 
 func UpdateArticulo(w http.ResponseWriter, r *http.Request) {

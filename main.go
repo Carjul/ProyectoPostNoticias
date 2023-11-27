@@ -32,6 +32,7 @@ func main() {
 	app.HandleFunc("/articulos", controllers.GetArticulos).Methods("GET")
 	app.HandleFunc("/articulo/{id}", controllers.GetOneArticulo).Methods("GET")
 	app.HandleFunc("/articulo", controllers.CreateArticulo).Methods("POST")
+	app.HandleFunc("/articuloEst", controllers.UpdateEstArticulo).Methods("POST")
 	app.HandleFunc("/articulo/{id}", controllers.UpdateArticulo).Methods("PUT")
 	app.HandleFunc("/articulo/{id}", controllers.DeleteArticulo).Methods("DELETE")
 	//EstadoArticulos CRUD
