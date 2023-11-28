@@ -28,6 +28,9 @@ func main() {
 
 	/* Rutas */
 	app.HandleFunc("/", controllers.Init).Methods("GET")
+	//sesion
+	app.HandleFunc("/login", controllers.ProcessLogin).Methods("POST")
+	app.HandleFunc("/logout", controllers.Logout).Methods("GET")
 	//Articulos CRUD
 	app.HandleFunc("/articulos", controllers.GetArticulos).Methods("GET")
 	app.HandleFunc("/articulo/{id}", controllers.GetOneArticulo).Methods("GET")
