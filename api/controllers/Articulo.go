@@ -15,7 +15,7 @@ import (
 
 func GetArticulos(w http.ResponseWriter, r *http.Request) {
 	coll := db.Client.Database("Noticias").Collection("Articulo")
-
+	collEstado := db.Client.Database("Noticias").Collection("EstadoArticulo")
 	cursor, err := coll.Find(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
@@ -27,6 +27,29 @@ func GetArticulos(w http.ResponseWriter, r *http.Request) {
 	if err = cursor.All(context.Background(), &articulos); err != nil {
 		panic(err)
 	}
+
+	// Recorrer cada artículo para obtener y asociar la información del estado
+	for _, articulo := range articulos {
+		estadoID, ok := articulo["EstadoArticuloId"].(primitive.ObjectID)
+		if !ok {
+			http.Error(w, "ID de estado no válido", http.StatusInternalServerError)
+			return
+		}
+
+		var estado bson.M
+		err = collEstado.FindOne(context.Background(), bson.M{"_id": estadoID}).Decode(&estado)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error al buscar el estado: %s", err.Error()), http.StatusInternalServerError)
+			return
+		}
+
+		// Asociar la información del estado al artículo
+		articulo["Estado"] = estado
+
+	
+
+	}
+
 	responseJSON, err := json.Marshal(articulos)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error al codificar los artículos como JSON: %s", err.Error()), http.StatusInternalServerError)
