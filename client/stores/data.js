@@ -5,6 +5,7 @@ export const useDataStore = defineStore('data', {
     return { 
         user: {},
         noticias: [],
+        isAuthtenticated: false,
         }
   },
   
@@ -15,9 +16,14 @@ export const useDataStore = defineStore('data', {
     setDeleteUser() {
         this.user = {}
     },
-    setNoticias(noticias) {
-      
+    setNoticias(noticias) { 
       this.noticias=noticias;
+    },
+    setDeleteNoticias() {
+      this.noticias = []
+    },
+    setAuthtenticated(params) {
+      this.isAuthtenticated = params
     },
   },
 })

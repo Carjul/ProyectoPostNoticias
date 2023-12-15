@@ -126,6 +126,9 @@
 import { ref,onMounted } from 'vue'
 import { useDataStore } from '../stores/data'
 
+//env
+const Env =useRuntimeConfig()
+//store
 const dataStore = useDataStore()
 
  onMounted(() => {
@@ -141,9 +144,9 @@ useHead({
   meta: [
     { name: 'description', content: 'My amazing site.' }
   ],
-  bodyAttrs: {
-    class: 'test'
-  }
+  link: [
+    { rel: 'shortcut icon', href: 'https://i.pinimg.com/originals/2e/2b/21/2e2b21aeed393403d4620367f9e093f9.gif' }
+  ]
 })
 
 const sendUser = ref({
@@ -155,7 +158,7 @@ const mostrar = ref(true)
 
 const login = async () => {
 
-  const res = await fetch('http://localhost:8000/login', {
+  const res = await fetch(`${Env.public.apiUrl}/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -172,6 +175,7 @@ const login = async () => {
 
   if (dataStore.user.hasOwnProperty('_id')) {
     mostrarbtn.value = false
+    dataStore.setAuthtenticated(true)
     await navigateTo('/home')
   }
 }

@@ -7,6 +7,11 @@ export default defineNuxtConfig({
       viewport: 'width=device-width, initial-scale=1',
     }
   },
+  runtimeConfig: {
+    public: {
+      apiUrl: process.env.NUXT_API_URL,
+    },
+  },
   css: ['~/assets/css/main.css'],
   postcss: {
     plugins: {
